@@ -1,0 +1,194 @@
+<%- include('../partials/header') %>
+    <%- include('../partials/sidebar') %>
+
+        <main class="main-content">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <h1 style="font-weight: 800; color: var(--secondary);">Gestión de Estudiantes</h1>
+                    <p style="color: var(--text-muted);">Administra la información de los estudiantes inscritos.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openModal('addModal')">
+                    <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Nuevo Estudiante
+                </button>
+            </header>
+
+            <div class="data-card">
+                <div class="table-header">
+                    <h3 style="font-size: 1.125rem;">Lista de Estudiantes</h3>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Documento</th>
+                                <th>Nombres</th>
+                                <th>Apellidos</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% students.forEach(student=> { %>
+                                <tr>
+                                    <td style="font-weight: 600;">
+                                        <%= student.documento %>
+                                    </td>
+                                    <td>
+                                        <%= student.nombres %>
+                                    </td>
+                                    <td>
+                                        <%= student.apellidos %>
+                                    </td>
+                                    <td>
+                                        <%= student.correo %>
+                                    </td>
+                                    <td>
+                                        <%= student.telefono %>
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                            style="padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: <%= student.estado_matricula === 'activo' ? '#dcfce7' : '#fee2e2' %>; color: <%= student.estado_matricula === 'activo' ? '#15803d' : '#b91c1c' %>;">
+                                            <%= student.estado_matricula.toUpperCase() %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="btn"
+                                                style="padding: 0.4rem; background: #f1f5f9; color: var(--primary);"
+                                                onclick='editStudent(<%= JSON.stringify(student) %>)'>
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <a href="/students/delete/<%= student.id_estudiante %>" class="btn"
+                                                style="padding: 0.4rem; background: #f1f5f9; color: var(--error);"
+                                                onclick="return confirm('¿Estás seguro de eliminar este estudiante?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <!-- Add Modal -->
+        <div id="addModal" class="modal-overlay">
+            <div class="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700;">Registrar Estudiante</h3>
+                    <button onclick="closeModal('addModal')"
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                </div>
+                <form action="/students/add" method="POST">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Documento</label>
+                            <input type="text" name="documento" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Correo</label>
+                            <input type="email" name="correo" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" name="nombres" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" name="apellidos" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dirección</label>
+                            <input type="text" name="direccion" class="form-control">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <button type="button" class="btn" style="background: #e2e8f0;"
+                            onclick="closeModal('addModal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Estudiante</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="modal-overlay">
+            <div class="modal-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700;">Editar Estudiante</h3>
+                    <button onclick="closeModal('editModal')"
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                </div>
+                <form id="editForm" action="" method="POST">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Documento</label>
+                            <input type="text" name="documento" id="edit_documento" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Correo</label>
+                            <input type="email" name="correo" id="edit_correo" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nombres</label>
+                            <input type="text" name="nombres" id="edit_nombres" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Apellidos</label>
+                            <input type="text" name="apellidos" id="edit_apellidos" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" id="edit_telefono" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select name="estado_matricula" id="edit_estado" class="form-control">
+                                <option value="activo">Activo</option>
+                                <option value="inactivo">Inactivo</option>
+                                <option value="egresado">Egresado</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" name="direccion" id="edit_direccion" class="form-control">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                        <button type="button" class="btn" style="background: #e2e8f0;"
+                            onclick="closeModal('editModal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Actualizar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function openModal(id) {
+                document.getElementById(id).style.display = 'flex';
+            }
+            function closeModal(id) {
+                document.getElementById(id).style.display = 'none';
+            }
+            function editStudent(student) {
+                document.getElementById('editForm').action = '/students/edit/' + student.id_estudiante;
+                document.getElementById('edit_documento').value = student.documento;
+                document.getElementById('edit_nombres').value = student.nombres;
+                document.getElementById('edit_apellidos').value = student.apellidos;
+                document.getElementById('edit_correo').value = student.correo;
+                document.getElementById('edit_telefono').value = student.telefono;
+                document.getElementById('edit_direccion').value = student.direccion;
+                document.getElementById('edit_estado').value = student.estado_matricula;
+                openModal('editModal');
+            }
+        </script>
+
+        <%- include('../partials/footer') %>

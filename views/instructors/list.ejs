@@ -1,0 +1,154 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main class="main-content">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-weight: 800; color: var(--secondary);">Gestión de Instructores</h1>
+            <p style="color: var(--text-muted);">Administra la planta docente del instituto.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addModal')">
+            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Nuevo Instructor
+        </button>
+    </header>
+
+    <div class="data-card">
+        <div class="table-header">
+            <h3 style="font-size: 1.125rem;">Lista de Instructores</h3>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>Especialidad</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% instructors.forEach(inst => { %>
+                        <tr>
+                            <td style="font-weight: 600;"><%= inst.nombres %></td>
+                            <td><%= inst.apellidos %></td>
+                            <td><%= inst.especialidad %></td>
+                            <td><%= inst.correo %></td>
+                            <td><%= inst.telefono %></td>
+                            <td>
+                                <span class="badge" style="padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; background: <%= inst.estado === 'activo' ? '#dcfce7' : '#fee2e2' %>; color: <%= inst.estado === 'activo' ? '#15803d' : '#b91c1c' %>;">
+                                    <%= inst.estado.toUpperCase() %>
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn" style="padding: 0.4rem; background: #f1f5f9; color: var(--primary);" onclick='editInstructor(<%= JSON.stringify(inst) %>)'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="/instructors/delete/<%= inst.id_instructor %>" class="btn" style="padding: 0.4rem; background: #f1f5f9; color: var(--error);" onclick="return confirm('¿Eliminar instructor?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modals same pattern -->
+<div id="addModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Registrar Instructor</h3>
+        <form action="/instructors/add" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Nombres</label>
+                    <input type="text" name="nombres" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellidos</label>
+                    <input type="text" name="apellidos" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Especialidad</label>
+                    <input type="text" name="especialidad" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" name="correo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeModal('addModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Editar Instructor</h3>
+        <form id="editForm" action="" method="POST">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Nombres</label>
+                    <input type="text" name="nombres" id="edit_nombres" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellidos</label>
+                    <input type="text" name="apellidos" id="edit_apellidos" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Especialidad</label>
+                    <input type="text" name="especialidad" id="edit_especialidad" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo</label>
+                    <input type="email" name="correo" id="edit_correo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" id="edit_telefono" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" id="edit_estado" class="form-control">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeModal('editModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function editInstructor(inst) {
+        document.getElementById('editForm').action = '/instructors/edit/' + inst.id_instructor;
+        document.getElementById('edit_nombres').value = inst.nombres;
+        document.getElementById('edit_apellidos').value = inst.apellidos;
+        document.getElementById('edit_especialidad').value = inst.especialidad;
+        document.getElementById('edit_correo').value = inst.correo;
+        document.getElementById('edit_telefono').value = inst.telefono;
+        document.getElementById('edit_estado').value = inst.estado;
+        openModal('editModal');
+    }
+</script>
+
+<%- include('../partials/footer') %>

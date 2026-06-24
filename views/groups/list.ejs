@@ -1,0 +1,180 @@
+<%- include('../partials/header') %>
+<%- include('../partials/sidebar') %>
+
+<main class="main-content">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-weight: 800; color: var(--secondary);">Gestión de Grupos</h1>
+            <p style="color: var(--text-muted);">Administra los grupos asignados a cada curso e instructor.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('addModal')">
+            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Nuevo Grupo
+        </button>
+    </header>
+
+    <% if (error) { %>
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-triangle"></i> <%= error %>
+        </div>
+    <% } %>
+
+    <div class="data-card">
+        <div class="table-header">
+            <h3 style="font-size: 1.125rem;">Lista de Grupos</h3>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Curso</th>
+                        <th>Instructor</th>
+                        <th>Horario</th>
+                        <th>Inicio / Fin</th>
+                        <th>Cupo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% groups.forEach(group => { %>
+                        <tr>
+                            <td style="font-weight: 600;"><%= group.curso_nombre %></td>
+                            <td><%= group.instructor_nombres %> <%= group.instructor_apellidos %></td>
+                            <td><%= group.horario %></td>
+                            <td>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                                    <%= new Date(group.fecha_inicio).toLocaleDateString() %> <br>
+                                    <%= new Date(group.fecha_fin).toLocaleDateString() %>
+                                </span>
+                            </td>
+                            <td><%= group.cupo_maximo %></td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn" style="padding: 0.4rem; background: #f1f5f9; color: var(--primary);" onclick='editGroup(<%= JSON.stringify(group) %>)'>
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="/groups/delete/<%= group.id_group %>" class="btn" style="padding: 0.4rem; background: #f1f5f9; color: var(--error);" onclick="return confirm('¿Eliminar grupo?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Add Modal -->
+<div id="addModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Crear Nuevo Grupo</h3>
+        <form action="/groups/add" method="POST">
+            <div class="form-group">
+                <label class="form-label">Seleccionar Curso</label>
+                <select name="id_curso" class="form-control" required>
+                    <% courses.forEach(course => { %>
+                        <option value="<%= course.id_curso %>"><%= course.nombre %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Seleccionar Instructor</label>
+                <select name="id_instructor" class="form-control" required>
+                    <% instructors.forEach(inst => { %>
+                        <option value="<%= inst.id_instructor %>"><%= inst.nombres %> <%= inst.apellidos %> (<%= inst.especialidad %>)</option>
+                    <% }) %>
+                </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" name="fecha_inicio" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" name="fecha_fin" class="form-control" required>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Horario</label>
+                    <input type="text" name="horario" class="form-control" placeholder="Lunes a Viernes 8:00 - 12:00" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cupo Máximo</label>
+                    <input type="number" name="cupo_maximo" class="form-control" required>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeModal('addModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear Grupo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Editar Grupo</h3>
+        <form id="editForm" action="" method="POST">
+            <div class="form-group">
+                <label class="form-label">Curso</label>
+                <select name="id_curso" id="edit_curso" class="form-control" required>
+                    <% courses.forEach(course => { %>
+                        <option value="<%= course.id_curso %>"><%= course.nombre %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Instructor</label>
+                <select name="id_instructor" id="edit_instructor" class="form-control" required>
+                    <% instructors.forEach(inst => { %>
+                        <option value="<%= inst.id_instructor %>"><%= inst.nombres %> <%= inst.apellidos %></option>
+                    <% }) %>
+                </select>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" name="fecha_inicio" id="edit_inicio" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" name="fecha_fin" id="edit_fin" class="form-control" required>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Horario</label>
+                    <input type="text" name="horario" id="edit_horario" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cupo Máximo</label>
+                    <input type="number" name="cupo_maximo" id="edit_cupo" class="form-control" required>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem;">
+                <button type="button" class="btn" style="background: #e2e8f0;" onclick="closeModal('editModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function editGroup(group) {
+        document.getElementById('editForm').action = '/groups/edit/' + group.id_grupo;
+        document.getElementById('edit_curso').value = group.id_curso;
+        document.getElementById('edit_instructor').value = group.id_instructor;
+        document.getElementById('edit_inicio').value = group.fecha_inicio.split('T')[0];
+        document.getElementById('edit_fin').value = group.fecha_fin.split('T')[0];
+        document.getElementById('edit_horario').value = group.horario;
+        document.getElementById('edit_cupo').value = group.cupo_maximo;
+        openModal('editModal');
+    }
+</script>
+
+<%- include('../partials/footer') %>
